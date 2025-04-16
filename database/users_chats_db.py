@@ -32,12 +32,13 @@ class Database:
             )
         )
 
-    async def get_settings(self, group_id):
-        chat = await self.grp.find_one({'id': int(group_id)})
-        if chat and 'settings' in chat:
-            return chat['settings']
+    async def get_settings(self, id):
+        chat = await self.grp.find_one({'id':int(id)})
+        if chat:
+            return chat.get('settings', self.default)
         else:
-            return self.default.copy()
+            await self.grp.update_one({'id': int(id)}, {'$set': {'settings': self.default}} , upsert=True)
+        return self.default
 
     async def find_join_req(self, id):
         return bool(await self.req.find_one({'id': id}))
